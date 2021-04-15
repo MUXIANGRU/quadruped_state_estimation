@@ -1,0 +1,22 @@
+<?xml version="1.0" ?>
+<launch>
+<!--把 odom坐标系和map坐标系当成世界坐标系 -->
+  <!-- make map and odom coincident for this demo -->
+  <!-- <node name="odom_to_map"  pkg="tf" type="static_transform_publisher" output="screen"  args="0 0 0 0 0 0  /odom /map 200" /> -->
+
+  <!-- <param name="use_sim_time" value="true" /> -->
+  <!-- load Pronto config settings -->
+ <!-- <arg name="fovis" default="true" /> -->
+  <!-- launch the FOVIS node -->
+ <!-- <include if="$(arg fovis)" file="$(find fovis_ros)/launch/realsense_simpledog.launch" >
+    <arg name="output" value="screen"/>
+  </include> -->
+  <param name="/hang_test" value="false" />
+  <param name="/pronto_real" value="false" />
+  <param name="/imu_topic_name" value="/imu" />
+  <rosparam command="load" file="$(find pronto_laikago)/config/laikago_test.yaml" />
+  <!-- launch the Pronto anymal node -->
+  <node name="laikago_state" pkg="pronto_laikago" type="laikago_state" output="screen" />
+
+
+</launch>

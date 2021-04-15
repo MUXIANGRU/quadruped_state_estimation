@@ -1,0 +1,17 @@
+digraph G {
+node [shape=box];
+"base_link" [label="base_link"];
+"LF" [label="LF"];
+"LB" [label="LB"];
+"RF" [label="RF"];
+"RB" [label="RB"];
+node [shape=ellipse, color=blue, fontcolor=blue];
+"base_link" -> "wheel_lf_joint" [label="xyz: -0.02 0.02 0.005 \nrpy: -1.5708 -0 -1.5708"]
+"wheel_lf_joint" -> "LF"
+"base_link" -> "wheel_lh_joint" [label="xyz: -0.02 -0.02 0.005 \nrpy: -1.5708 -0 -1.5708"]
+"wheel_lh_joint" -> "LB"
+"base_link" -> "wheel_rf_joint" [label="xyz: 0.02 0.02 0.005 \nrpy: -1.5708 -0 1.5708"]
+"wheel_rf_joint" -> "RF"
+"base_link" -> "wheel_rh_joint" [label="xyz: 0.02 -0.02 0.005 \nrpy: -1.5708 5.55112e-17 1.5708"]
+"wheel_rh_joint" -> "RB"
+}

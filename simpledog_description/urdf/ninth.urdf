@@ -1,0 +1,287 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
+     Commit Version: 1.5.0-0-g9aa0fdb  Build Version: 1.5.7004.21443
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot
+  name="ninth">
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="2.194E-09 0.00015387 -0.069846"
+        rpy="0 0 0" />
+      <mass
+        value="7.6425" />
+      <inertia
+        ixx="0.032914"
+        ixy="6.315E-08"
+        ixz="-2.432E-11"
+        iyy="0.045026"
+        iyz="-5.9764E-12"
+        izz="0.061374" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.75294 0.75294 0.75294 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="LF">
+    <inertial>
+      <origin
+        xyz="-2.2204E-16 -1.1102E-16 0.0089611"
+        rpy="0 0 0" />
+      <mass
+        value="0.082552" />
+      <inertia
+        ixx="9.5843E-05"
+        ixy="-7.341E-22"
+        ixz="6.5915E-21"
+        iyy="9.5843E-05"
+        iyz="-1.3922E-20"
+        izz="0.00012887" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/LF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/LF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_lf_joint"
+    type="continuous">
+    <origin
+      xyz="0.3417 0.10462 -0.25622"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LF" />
+    <axis
+      xyz="0 0 1" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="LB">
+    <inertial>
+      <origin
+        xyz="-1.1102E-16 -1.1102E-16 0.0089611"
+        rpy="0 0 0" />
+      <mass
+        value="0.082552" />
+      <inertia
+        ixx="9.5843E-05"
+        ixy="1.7237E-20"
+        ixz="-2.0739E-20"
+        iyy="9.5843E-05"
+        iyz="1.184E-20"
+        izz="0.00012887" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/LB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/LB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_lh_joint"
+    type="continuous">
+    <origin
+      xyz="-0.3417 0.104 -0.25622"
+      rpy="-1.5708 0 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="LB" />
+    <axis
+      xyz="0 0 -1" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="RF">
+    <inertial>
+      <origin
+        xyz="1.1102E-16 0 -0.0089611"
+        rpy="0 0 0" />
+      <mass
+        value="0.082552" />
+      <inertia
+        ixx="9.5843E-05"
+        ixy="6.0351E-21"
+        ixz="-3.2264E-19"
+        iyy="9.5843E-05"
+        iyz="4.9138E-21"
+        izz="0.00012887" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/RF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/RF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rf_joint"
+    type="continuous">
+    <origin
+      xyz="0.3417 -0.10338 -0.25622"
+      rpy="-1.5708 -1.5708 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RF" />
+    <axis
+      xyz="0 0 1" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <link
+    name="RB">
+    <inertial>
+      <origin
+        xyz="-1.6653E-16 0 -0.0089611"
+        rpy="0 0 0" />
+      <mass
+        value="0.082552" />
+      <inertia
+        ixx="9.5843E-05"
+        ixy="1.2388E-21"
+        ixz="2.5549E-19"
+        iyy="9.5843E-05"
+        iyz="-2.5419E-20"
+        izz="0.00012887" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/RB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.79216 0.81961 0.93333 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://ninth/meshes/RB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rh_joint"
+    type="continuous">
+    <origin
+      xyz="-0.3417 -0.104 -0.25622"
+      rpy="-1.5708 -1.5708 0" />
+    <parent
+      link="base_link" />
+    <child
+      link="RB" />
+    <axis
+      xyz="0 0 -1" />
+    <safety_controller
+      k_velocity="0" />
+  </joint>
+  <gazebo reference="LF">
+     <material>Gazebo/OrangeTransparent</material>
+  </gazebo>
+  <gazebo reference="RF">
+     <material>Gazebo/OrangeTransparent</material>
+  </gazebo>
+  <gazebo reference="LB">
+     <material>Gazebo/BlackTransparent</material>
+  </gazebo>
+  <gazebo reference="RB">
+     <material>Gazebo/BlackTransparent</material>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="balance_controller" filename="librobot_state_gazebo_ros_control_plugin.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <robotSimType>balance_controller/SimRobotStateHardwareInterface</robotSimType>
+    </plugin>
+  </gazebo>
+
+</robot>

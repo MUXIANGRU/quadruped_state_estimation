@@ -1,0 +1,1 @@
+/usr/bin/c++    -rdynamic CMakeFiles/fv-example-openni.dir/main.cpp.o CMakeFiles/fv-example-openni.dir/data_capture.cpp.o  -o ../../bin/fv-example-openni  -L/home/mxr/catkin_ws3/src/fovis/libfovis/build/lib  -L/usr/local/lib -Wl,-rpath,/home/mxr/catkin_ws3/src/fovis/libfovis/build/lib:/usr/local/lib: -lOpenNI ../../lib/libfovis.so.1 

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<robot name="simpledog_gazebo" xmlns:xacro="http://ros.org/wiki/xacro">
+  <!-- <xacro:arg name="laser_visual"  default="false"/> -->
+  <!-- <xacro:arg name="camera_visual" default="false"/> -->
+  <!-- <xacro:arg name="imu_visual"    default="false"/> -->
+  <xacro:arg name="robot_namespace" default="/" />
+  <gazebo reference="base_link">
+    <material>Gazebo/DarkGrey</material>
+    <mu1 value="10.0"/>
+    <mu2 value="10.0"/>
+    <kp value="10000000.0" />
+    <kd value="1.0" />
+    <fdir1 value="1 0 0"/>
+    <gravity value="ture"/>
+  </gazebo>
+
+  <gazebo>
+    <plugin name="balance_controller" filename="librobot_state_gazebo_ros_control_plugin.so">
+      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+      <robotSimType>balance_controller/SimRobotStateHardwareInterface</robotSimType>
+    </plugin>
+  </gazebo>
+
+</robot>

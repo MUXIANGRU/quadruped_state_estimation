@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<launch>
+
+  <!-- launch the Pronto anymal node -->
+  <node name="pose_means" pkg="pronto_laikago" type="pose_means" output="screen" />
+  
+  <!-- converts TSIF Pose messages into TF -->
+  <node name="tsif_tf_publisher" pkg="pronto_laikago" type="pose_to_tf.py" args="--config_file $(find pronto_laikago)/config/pose_to_tf.yaml" output="log" />
+
+
+
+</launch>
+
+
+

@@ -1,0 +1,7 @@
+# Define the publishing rate, must be positive.
+publish_rate: 400
+
+frames:
+  velodyne:
+    pose_topic: /laikago_pose
+    parent_frame: odom

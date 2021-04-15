@@ -1,0 +1,21 @@
+<launch>
+  <arg
+    name="model" />
+
+  <arg name="kinect_enabled" default="true"/>
+  <arg name="robot_namespace" default="/"/>
+
+  <param name="/robot_description" command="$(find xacro)/xacro '$(find simpledog_description)/urdf/simpledog.urdf.xacro'
+  --inorder
+  robot_namespace:=$(arg robot_namespace)
+  kinect_enabled:=$(arg kinect_enabled)"/>
+  <node
+    name="robot_state_publisher"
+    pkg="robot_state_publisher"
+    type="state_publisher" />
+    <node
+       name="joint_state_publisher"
+       pkg="joint_state_publisher"
+       type="joint_state_publisher" />
+
+</launch>

@@ -1,0 +1,31 @@
+image_a_topic : "/camera_d435/infra1/image_raw"
+#/camera_d435/infra1/image_raw /stereocamera/left/image_raw
+image_a_transport : "raw"
+
+image_b_topic : "/camera_d435/infra2/image_raw"
+#/camera_d435/infra2/image_raw /stereocamera/right/image_raw
+image_b_transport : "raw"
+
+# auxiliary inputs
+input_imu_topic : "/imu"
+input_body_pose_topic : "/pose_pub_node/base_pose"
+
+# output
+output_using_imu_time : false
+output_body_pose_topic : "/fovis/pose_in_odom"
+output_tf_frame : "base_fovis"
+
+# 0 cfg file. 1 IMU r & p. 2 using a pose topic
+initial_pose_mode : 2
+# if above is 0, then use this position and rpy (degrees) in init
+initial_position : [0,0,0]
+initial_rpy : [0,0,0]
+
+extrapolate_when_vo_fails : false
+
+# 0: older. 1: well used on MultiSense. 2: used on MultiSense, higher fps and real time
+which_vo_options : 0
+
+verbose : false
+publish_feature_analysis : true
+write_pose_to_file : false

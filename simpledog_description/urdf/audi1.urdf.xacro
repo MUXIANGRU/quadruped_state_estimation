@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com)
+     Commit Version: 1.5.1-0-g916b5db  Build Version: 1.5.7152.31018
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="audi1" xmlns:xacro="http://ros.org/wiki/xacro">
+<xacro:include filename="$(find simpledog)/urdf/joint_gazebo.urdf.xacro" />
+<xacro:include filename="$(find simpledog)/urdf/audi1_gazebo.urdf.xacro" />
+
+<xacro:simpledog_joint joint_prefix="wheel_lf_"> </xacro:simpledog_joint>
+<xacro:simpledog_joint joint_prefix="wheel_rf_"> </xacro:simpledog_joint>
+<xacro:simpledog_joint joint_prefix="wheel_rh_"> </xacro:simpledog_joint>
+<xacro:simpledog_joint joint_prefix="wheel_lh_"> </xacro:simpledog_joint>
+
+  <link
+    name="base_link">
+    <inertial>
+      <origin
+        xyz="2.5794E-18 1.2897E-18 0.005"
+        rpy="0 0 0" />
+      <mass
+        value="0.12006" />
+      <inertia
+        ixx="2.6585E-05"
+        ixy="2.7219E-21"
+        ixz="-3.7146E-22"
+        iyy="1.0699E-05"
+        iyz="-1.8974E-22"
+        izz="3.5324E-05" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/base_link.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.52941 0.54902 0.54902 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/base_link.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <link
+    name="LF">
+    <inertial>
+      <origin
+        xyz="3.46944695195361E-18 1.73472347597681E-18 0.0025"
+        rpy="0 0 0" />
+      <mass
+        value="0.0061261056745001" />
+      <inertia
+        ixx="1.08483121319273E-07"
+        ixy="1.82783223511911E-41"
+        ixz="2.77464933291085E-40"
+        iyy="1.08483121319273E-07"
+        iyz="-2.68833699079736E-25"
+        izz="1.91440802328128E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/LF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/LF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_lf_joint"
+    type="continuous">
+    <origin
+      xyz="-0.02 0.02 0.005"
+      rpy="-1.5708 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="LF" />
+    <axis
+      xyz="0 0 1" />
+    <limit
+    effort="300"
+    velocity="10"
+    lower="-7.0"
+    upper="7.0"/>
+  </joint>
+  <link
+    name="RF">
+    <inertial>
+      <origin
+        xyz="0 0 0.0025"
+        rpy="0 0 0" />
+      <mass
+        value="0.0061261056745001" />
+      <inertia
+        ixx="1.08483121319273E-07"
+        ixy="1.82783223511911E-41"
+        ixz="-2.77464933291085E-40"
+        iyy="1.08483121319273E-07"
+        iyz="2.68833699079736E-25"
+        izz="1.91440802328128E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/RF.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/RF.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rf_joint"
+    type="continuous">
+    <origin
+      xyz="0.02 0.02 0.005"
+      rpy="-1.5708 0 1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="RF" />
+    <axis
+      xyz="0 0 -1" />
+    <limit
+    effort="300"
+    velocity="10"
+    lower="-7.0"
+    upper="7.0"/>
+  </joint>
+  <link
+    name="LB">
+    <inertial>
+      <origin
+        xyz="-3.46944695195361E-18 8.67361737988404E-19 0.00250000000000001"
+        rpy="0 0 0" />
+      <mass
+        value="0.0061261056745001" />
+      <inertia
+        ixx="1.08483121319273E-07"
+        ixy="1.82783223511912E-41"
+        ixz="2.77464933291085E-40"
+        iyy="1.08483121319273E-07"
+        iyz="-2.15066959263787E-24"
+        izz="1.91440802328128E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/LB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="0.529411764705882 0.549019607843137 0.549019607843137 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/LB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_lh_joint"
+    type="continuous">
+    <origin
+      xyz="-0.02 -0.02 0.005"
+      rpy="-1.5708 0 -1.5708" />
+    <parent
+      link="base_link" />
+    <child
+      link="LB" />
+    <axis
+      xyz="0 0 1" />
+      <limit
+      effort="300"
+      velocity="10"
+      lower="-7.0"
+      upper="7.0"/>
+  </joint>
+  <link
+    name="RB">
+    <inertial>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <mass
+        value="0.0061261056745001" />
+      <inertia
+        ixx="1.08483121319273E-07"
+        ixy="1.82783223511912E-41"
+        ixz="2.77464933291085E-40"
+        iyy="1.08483121319273E-07"
+        iyz="-2.15066959263787E-24"
+        izz="1.91440802328128E-07" />
+    </inertial>
+    <visual>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/RB.STL" />
+      </geometry>
+      <material
+        name="">
+        <color
+          rgba="1 1 1 1" />
+      </material>
+    </visual>
+    <collision>
+      <origin
+        xyz="0 0 0"
+        rpy="0 0 0" />
+      <geometry>
+        <mesh
+          filename="package://audi1/meshes/RB.STL" />
+      </geometry>
+    </collision>
+  </link>
+  <joint
+    name="wheel_rh_joint"
+    type="continuous">
+    <origin
+      xyz="0.02 -0.02 0.005"
+      rpy="-1.5707963267949 0 1.5707963267949" />
+    <parent
+      link="base_link" />
+    <child
+      link="RB" />
+    <axis
+      xyz="0 0 -1" />
+      <limit
+      effort="300"
+      velocity="10"
+      lower="-7.0"
+      upper="7.0"/>
+  </joint>
+</robot>

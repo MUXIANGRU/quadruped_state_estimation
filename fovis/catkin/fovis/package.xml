@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>fovis</name>
+  <version>1.0.0</version>
+  <description>The fovis package</description>
+  <maintainer email="v.ivan@ed.ac.uk">Vladimir Ivan</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <!--
+  <depend>bot_core_lcmtypes</depend>
+  <depend>libglib-dev</depend>
+  <depend>python-gtk2</depend>
+  <depend>gtk2</depend>
+  <depend>mesa-common-dev</depend>
+  <depend>opengl</depend>
+  <depend>glut</depend>
+  <depend>libjpeg</depend>
+-->
+</package>

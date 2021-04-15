@@ -1,0 +1,11 @@
+/**/lcmtypes/c/
+/**/lcmtypes/cpp/
+/**/lcmtypes/java/
+/**/lcmtypes/python/
+
+/**/pod-build/
+
+eigen-utils/matlab/pods_path.m
+path-util/python/path_util/path_util.py
+CMakeLists.txt.user
+**build/

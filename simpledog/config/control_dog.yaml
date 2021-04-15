@@ -1,0 +1,170 @@
+simpledog_joint_publisher:
+  type: "joint_state_controller/JointStateController"
+  publish_rate: 50
+
+state_estimate_update:
+  type: "balance_controller/StateEstimateController"
+  real_robot: false
+  use_gazebo_feedback: false
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+
+single_leg_controller:
+  type: "balance_controller/SingleLegController"
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE']
+  legs: ['LF_LEG']
+  control_methods: ['end_position']
+
+base_balance_controller:
+  type: "balance_controller/RosBalanceController"
+  real_robot: false
+  ignore_contact_sensor: false
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+  LF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+
+all_joints_position_effort_group_controller:
+  type: effort_controllers/JointGroupPositionController
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+  LF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+
+
+all_joints_position_group_controller:
+  type: position_controllers/JointGroupPositionController
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+  LF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+
+
+all_joints_velocity_group_controller:
+  type: velocity_controllers/JointGroupVelocityController
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+  LF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+
+
+all_joints_effort_group_controller:
+  type: effort_controllers/JointGroupEffortController
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+  LF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RF_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  RH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HAA/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_HFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+  LH_KFE/pid: {p: 300.0, i: 0.01, d: 3.0}
+
+LF_HAA_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LF_HAA
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+LF_HFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LF_HFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+LF_KFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LF_KFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RF_HAA_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RF_HAA
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RF_HFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RF_HFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RF_KFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RF_KFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RH_HAA_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RH_HAA
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RH_HFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RH_HFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+RH_KFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: RH_KFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+LH_HAA_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LH_HAA
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+LH_HFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LH_HFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+LH_KFE_position_controller:
+  type: effort_controllers/JointPositionController
+  joint: LH_KFE
+  pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+Position_controller:
+  type: balance_controller/balance_position_controller
+  ignore_contact_sensor: false
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']
+
+configure_change_controller:
+  type: balance_controller/configure_change_controller
+  ignore_contact_sensor: true
+  joints: ['LF_HAA', 'LF_HFE', 'LF_KFE', 'RF_HAA', 'RF_HFE', 'RF_KFE', 'RH_HAA', 'RH_HFE', 'RH_KFE', 'LH_HAA', 'LH_HFE', 'LH_KFE']

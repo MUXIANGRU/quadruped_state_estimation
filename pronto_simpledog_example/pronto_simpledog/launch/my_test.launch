@@ -1,0 +1,20 @@
+<?xml version="1.0" ?>
+<launch>
+<!--把 odom坐标系和map坐标系当成世界坐标系 -->
+  <!-- make map and odom coincident for this demo -->
+  <!-- <node name="odom_to_map"  pkg="tf" type="static_transform_publisher" output="screen"  args="0 0 0 0 0 0  /odom /map 200" /> -->
+
+  <!-- <param name="use_sim_time" value="true" /> -->
+  <!-- load Pronto config settings -->
+ <!-- <arg name="fovis" default="true" /> -->
+  <!-- launch the FOVIS node -->
+ <!-- <include if="$(arg fovis)" file="$(find fovis_ros)/launch/realsense_simpledog.launch" >
+    <arg name="output" value="screen"/>
+  </include> -->
+  
+  <rosparam command="load" file="$(find pronto_simpledog)/config/my_test.yaml" />
+  <!-- launch the Pronto anymal node -->
+  <node name="contact_force_test" pkg="pronto_simpledog" type="contact_force_test" output="screen" />
+  <param name="/use_gazebo_time" value="true" />
+
+</launch>

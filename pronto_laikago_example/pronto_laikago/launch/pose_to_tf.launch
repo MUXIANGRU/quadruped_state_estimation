@@ -1,0 +1,7 @@
+<?xml version="1.0" ?>
+<launch>
+<!--pronto_way or kin_and_imu -->
+  <param name="/tf_publish_way" value="kin_and_imu" />
+  <node name="pose_means" pkg="pronto_laikago" type="pose_means" output="screen" />
+
+</launch>

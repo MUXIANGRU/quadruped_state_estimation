@@ -1,0 +1,43 @@
+simpledog_joint_publisher:
+  type: "joint_state_controller/JointStateController"
+  publish_rate: 50
+
+all_joints_position_effort_group_controller:
+  type: effort_controllers/JointGroupPositionController
+  joints: ['wheel_lf_joint', 'wheel_rf_joint', 'wheel_lh_joint', 'wheel_rh_joint']
+  wheel_lf_joint/pid: {p: 0.001, i: 0.0, d: 0}
+  wheel_rf_joint/pid: {p: 0.001, i: 0.0, d: 0}
+  wheel_lh_joint/pid: {p: 0.001, i: 0.0, d: 0}
+  wheel_rh_joint/pid: {p: 0.001, i: 0.0, d: 0}
+
+all_joints_position_group_controller:
+  type: position_controllers/JointGroupPositionController
+  joints: ['wheel_lf_joint', 'wheel_rf_joint', 'wheel_lh_joint', 'wheel_rh_joint']
+  wheel_lf_joint/pid: {p: 0.00035, i: 0.0, d: 0}
+  wheel_rf_joint/pid: {p: 0.00035, i: 0.0, d: 0}
+  wheel_lh_joint/pid: {p: 0.00035, i: 0.0, d: 0}
+  wheel_rh_joint/pid: {p: 0.00035, i: 0.0, d: 0}
+
+all_joints_velocity_group_controller:
+  type: velocity_controllers/JointGroupVelocityController
+  joints: ['wheel_lf_joint', 'wheel_rf_joint', 'wheel_lh_joint', 'wheel_rh_joint']
+  wheel_lf_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_rf_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_lh_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_rh_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+
+all_joints_effort_group_controller:
+  type: effort_controllers/JointGroupEffortController
+  joints: ['wheel_lf_joint', 'wheel_rf_joint', 'wheel_lh_joint', 'wheel_rh_joint']
+  wheel_lf_joint/pid: {p: 1000.0, i: 0.01, d: 10.0}
+  wheel_rf_joint/pid: {p: 1000.0, i: 0.01, d: 10.0}
+  wheel_lh_joint/pid: {p: 1000.0, i: 0.01, d: 10.0}
+  wheel_rh_joint/pid: {p: 1000.0, i: 0.01, d: 10.0}
+
+wheel_controller:
+  type: balance_controller/wheel_controller
+  joints: ['wheel_lf_joint', 'wheel_rf_joint', 'wheel_lh_joint', 'wheel_rh_joint']
+  wheel_lf_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_rf_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_lh_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}
+  wheel_rh_joint/pid: {p: 100000.0, i: 0.01, d: 10.0}

@@ -1,0 +1,13 @@
+<?xml version="1.0" ?>
+<launch>
+
+  <!-- <param name="use_sim_time" value="true" /> -->
+  <!-- load Pronto config settings -->
+  <arg name="fovis" default="true" />
+  <!-- launch the FOVIS node -->
+  <include if="$(arg fovis)" file="$(find fovis_ros)/launch/realsense_simpledog.launch" >
+    <arg name="output" value="screen"/>
+  </include> 
+
+
+</launch>
