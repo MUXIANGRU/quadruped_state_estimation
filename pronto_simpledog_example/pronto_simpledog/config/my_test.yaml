@@ -11,7 +11,7 @@ state_estimator_pronto :
   tf_child_frame_id : "base_pronto"
   republish_sensors : false
   init_sensors : [ins, pose_meas]
-  active_sensors : [ins, legodo]  #seems that bias_lock didn't make difference
+  active_sensors : [ins, legodo ,pose_meas]  #seems that bias_lock didn't make difference
   utime_history_span : 60000000.0
 
   sigma0 : #imu_module,seems no influence

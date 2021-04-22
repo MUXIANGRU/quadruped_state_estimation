@@ -61,6 +61,7 @@
  Eigen::Vector3d LF_foot_Pos_b,RF_foot_Pos_b,LH_foot_Pos_b,RH_foot_Pos_b;
  Eigen::Vector3d LF_foot_Pos_w,RF_foot_Pos_w,LH_foot_Pos_w,RH_foot_Pos_w;
  Eigen::Vector3d pre_LF_foot_Pos_w,pre_RF_foot_Pos_w,pre_LH_foot_Pos_w,pre_RH_foot_Pos_w;
+
  Eigen::Vector3d pre_swing_LF_foot_Pos_w,pre_swing_RF_foot_Pos_w,pre_swing_LH_foot_Pos_w,pre_swing_RH_foot_Pos_w;
  Eigen::Vector3d LF_foot_Pos_delta,RF_foot_Pos_delta,LH_foot_Pos_delta,RH_foot_Pos_delta;
  Eigen::Vector3d testpos;
@@ -106,6 +107,7 @@
             foot_odom.pose.pose.position.y = 0.0;
             foot_odom.pose.pose.position.z = 0.14;
      }
+
 
      void testcontactCallback(const std_msgs::Float64MultiArray::ConstPtr& contact_states){
          //the foot order in this cpp is LF RF LH RH
@@ -323,6 +325,10 @@
              RF_foot_Pos_w = rotation_matrix_trans*RF_foot_Pos_b;
              LH_foot_Pos_w = rotation_matrix_trans*LH_foot_Pos_b;
              RH_foot_Pos_w = rotation_matrix_trans*RH_foot_Pos_b;
+
+             Eigen::Vector3d POSE_IN_WORLD;
+             POSE_IN_WORLD<<pose_in_world.position.x,pose_in_world.position.y,pose_in_world.position.z;
+
              //MXR::NOTE: just for initialization
              if(pre_LF_foot_Pos_w[0]==0.0&&pre_LF_foot_Pos_w[1]==0.0&&pre_LF_foot_Pos_w[2]==0.0){
                 pre_LF_foot_Pos_w = LF_foot_Pos_w;
@@ -489,7 +495,7 @@
      }
 
      ros::NodeHandle node_handle_,np;
-     ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,iscontact_sub_;
+     ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,iscontact_sub_,gazebopose_sub;
      ros::Publisher jointpos_pub_,footpos_pub_,foot_contact_force_pub_,footpos_delta_pub_,legOdom_pub_,
      lf_foot_contact_force_pub_,rf_foot_contact_force_pub_,rh_foot_contact_force_pub_,lh_foot_contact_force_pub_;
      boost::thread wrenchPublishThread_;
@@ -499,6 +505,7 @@
      sensor_msgs::JointState joint_state_;
      sensor_msgs::Imu imu_msg_;
      ros::Time contact_time=ros::Time::now();
+     geometry_msgs::Pose pose_in_world;
      bool use_gazebo_time;
 
 

@@ -260,21 +260,10 @@ int main(int argc,char **argv){
     ros::init(argc,argv,"real_contact_force");
     ros::NodeHandle nh_("~");
     int64_t utimet= 0;
-    //pronto::RBIS default_state,initial_state;
-    //pronto::RBIM default_cov,initial_cov;
-    //how to define the object of enum class
-    //pronto::RBISUpdateInterface::sensor_enum sensor_id = pronto::RBISUpdateInterface::ins;
-    //sensor_id = ins;
+
 
     ContactTest contacttest(nh_);
-    //pronto::RBISResetUpdate init_state(default_state,default_cov,pronto::RBISUpdateInterface::sensor_enum::ins,utimet);
-    //pronto::StateEstimator estimator(&init_state,history_span);
-    //pronto::quadruped::StanceEstimatorROS stance_estimator(nh_,feet_contact_force);
-    //pronto::quadruped::LegOdometerROS leg_odometer_(nh_,feet_jacs,fwd_kin);
-    //pronto::quadruped::ImuBiasLockROS bias(nh_);
-    //pronto::quadruped::LegodoHandlerROS leg_handler_(nh_,stance_estimator,leg_odometer_);
-    //pronto::ProntoNode<sensor_msgs::JointState> node(nh_, leg_handler_, bias);
-    //node.run();
+
     while (ros::ok()) {
         ros::spin();
       }

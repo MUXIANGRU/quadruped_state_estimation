@@ -450,6 +450,8 @@ std::cerr << ":::::::" << std::endl;
 
             Eigen::Matrix3d vel_cov = head_cov.block<3,3>(RBIS::velocity_ind,RBIS::velocity_ind);
             Eigen::Matrix3d omega_cov = head_cov.block<3,3>(RBIS::angular_velocity_ind,RBIS::angular_velocity_ind);
+            Eigen::Matrix3d pos_cov = head_cov.block<3,3>(RBIS::position_ind,RBIS::position_ind);
+            Eigen::Matrix3d ori_cov = head_cov.block<3,3>(RBIS::chi_ind,RBIS::chi_ind);
 
             for(int i=0; i<3; i++){
               for(int j=0; j<3; j++){
@@ -458,6 +460,21 @@ std::cerr << ":::::::" << std::endl;
               }
             }
 
+            for(int i=0; i<3; i++){
+              for(int j=0; j<3; j++){
+                  pose_msg_.pose.covariance[6*i+j] = pos_cov(i,j);
+                  pose_msg_.pose.covariance[6*(i+3)+j+3] = ori_cov(i,j);
+                //twist_msg_.twist.covariance[6*i+j] = vel_cov(i,j);
+                //twist_msg_.twist.covariance[6*(i+3)+j+3] = omega_cov(i,j);
+              }
+            }
+            //MXR::NOTE: JUST FOR LAIKAGO
+            twist_msg_.twist.twist.linear.x = twist_msg_.twist.twist.linear.x/3;
+            twist_msg_.twist.twist.linear.y = twist_msg_.twist.twist.linear.y/3;
+            twist_msg_.twist.twist.linear.z = twist_msg_.twist.twist.linear.z/9;
+            twist_msg_.twist.twist.angular.x = twist_msg_.twist.twist.angular.x/3;
+            twist_msg_.twist.twist.angular.y = twist_msg_.twist.twist.angular.y/3;
+            twist_msg_.twist.twist.angular.z = twist_msg_.twist.twist.angular.z/3;
             // publish the twist
             twist_pub_.publish(twist_msg_);
 

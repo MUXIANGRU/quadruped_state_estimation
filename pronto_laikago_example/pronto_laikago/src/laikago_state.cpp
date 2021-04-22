@@ -52,7 +52,7 @@ Eigen::Vector3d omega=Eigen::Vector3d::Zero();               //base angular velo
 Eigen::Vector3d omegad=Eigen::Vector3d::Zero();              //base angular acceleration from IMU
 Eigen::Matrix3d LF_J,RF_J,LH_J,RH_J;
 std_msgs::Float64MultiArray jointpos_;
-std_msgs::Float64MultiArray footpos_;
+std_msgs::Float64MultiArray footpos_,footpos_in_world;
 std_msgs::Float64MultiArray footpos_delta;
 std_msgs::Float64MultiArray foot_iscontact,real_foot_iscontact;
 geometry_msgs::PoseWithCovarianceStamped foot_odom;
@@ -61,6 +61,7 @@ Eigen::Matrix3d rotation_matrix_trans;
 Eigen::Vector3d LF_foot_Pos_b,RF_foot_Pos_b,LH_foot_Pos_b,RH_foot_Pos_b;
 Eigen::Vector3d LF_foot_Pos_w,RF_foot_Pos_w,LH_foot_Pos_w,RH_foot_Pos_w;
 Eigen::Vector3d pre_LF_foot_Pos_w,pre_RF_foot_Pos_w,pre_LH_foot_Pos_w,pre_RH_foot_Pos_w;
+Eigen::Vector3d LF_foot_Pos_w_real,RF_foot_Pos_w_real,LH_foot_Pos_w_real,RH_foot_Pos_w_real;
 Eigen::Vector3d LF_foot_Pos_delta,RF_foot_Pos_delta,RH_foot_Pos_delta,LH_foot_Pos_delta;
 Eigen::Vector3d base_position,velocity,vel_std;
 std::vector<double> beta={3.7252,-0.018077,2.8191,-0.015947,3.2241,-0.018661,3.8836,-0.019669};  //param used for logic regression
@@ -76,7 +77,7 @@ public:
         node_handle_.param("/pronto_real", pronto_real, bool(false));
         node_handle_.param("/hang_test",hang_test,bool(false));
         //node_handle_.param("/publish_real_tf",publish_real_tf,bool(false));
-
+       gazebopose_sub = node_handle_.subscribe("/pose_pub_node/base_pose",1,&testmaster::testposeCallback,this);
        jointstate_sub_ = node_handle_.subscribe("/joint_states", 1, &testmaster::testjointposCallback,this);
        jointpos_pub_ = node_handle_.advertise<std_msgs::Float64MultiArray>("/test/joint_pos",1);
        jointvel_sub_ = node_handle_.subscribe("/joint_states",1,&testmaster::testjointvelCallback,this);
@@ -89,11 +90,13 @@ public:
        rh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/rh_contact_force",1);
        lh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/lh_contact_force",1);
        footpos_pub_=node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_in_base",1);
+       foot_pose_in_world_pub_ = node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_in_world",1);
        footpos_delta_pub_=node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_delta",1);
        LegOdom_pub = node_handle_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/laikago_pronto/foot_odom",1);
        jointpos_.data.resize(12);
        footpos_.data.resize(12);
        footpos_delta.data.resize(12);
+       footpos_in_world.data.resize(12);
        foot_iscontact.data.resize(4);
        real_foot_iscontact.data.resize(4);
        Initparams();
@@ -105,7 +108,11 @@ public:
 
     }
     ~testmaster(){};
-
+    void testposeCallback(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& pose){
+       pose_in_world.position.x = pose->pose.pose.position.x;
+       pose_in_world.position.y = pose->pose.pose.position.y;
+       pose_in_world.position.z = pose->pose.pose.position.z;
+    }
     void Initparams(){
            foot_odom.pose.pose.position.x = 0.0;
            foot_odom.pose.pose.position.y = 0.0;
@@ -332,6 +339,24 @@ private:
             RF_foot_Pos_w = rotation_matrix_trans*RF_foot_Pos_b;
             LH_foot_Pos_w = rotation_matrix_trans*LH_foot_Pos_b;
             RH_foot_Pos_w = rotation_matrix_trans*RH_foot_Pos_b;
+
+            if(!pronto_real){
+                Eigen::Vector3d POSE_IN_WORLD;
+                POSE_IN_WORLD<<pose_in_world.position.x,pose_in_world.position.y,pose_in_world.position.z;
+                LF_foot_Pos_w_real = LF_foot_Pos_w+POSE_IN_WORLD;
+                RF_foot_Pos_w_real = RF_foot_Pos_w+POSE_IN_WORLD;
+                RH_foot_Pos_w_real = RH_foot_Pos_w+POSE_IN_WORLD;
+                LH_foot_Pos_w_real = LH_foot_Pos_w+POSE_IN_WORLD;
+            }else{
+                Eigen::Vector3d POSE_IN_WORLD;
+                POSE_IN_WORLD<<foot_odom.pose.pose.position.x,foot_odom.pose.pose.position.y,foot_odom.pose.pose.position.z;
+                LF_foot_Pos_w_real = LF_foot_Pos_w+POSE_IN_WORLD;
+                RF_foot_Pos_w_real = RF_foot_Pos_w+POSE_IN_WORLD;
+                RH_foot_Pos_w_real = RH_foot_Pos_w+POSE_IN_WORLD;
+                LH_foot_Pos_w_real = LH_foot_Pos_w+POSE_IN_WORLD;
+            }
+
+
 //            std::cout<<"rotation_matrix_trans        "<<rotation_matrix_trans<<std::endl;
 //            std::cout<<"LF_foot_Pos_w        "<<LF_foot_Pos_w<<std::endl;
 //            std::cout<<"pre_LF_foot_Pos_w        "<<pre_LF_foot_Pos_w<<std::endl;
@@ -452,9 +477,9 @@ private:
 
 
 
-            std::cout<<"foot_odom.pose.pose.position.x   "<< foot_odom.pose.pose.position.x<<std::endl;
-            std::cout<<"foot_odom.pose.pose.position.y   "<< foot_odom.pose.pose.position.y<<std::endl;
-            std::cout<<"foot_odom.pose.pose.position.z   "<< foot_odom.pose.pose.position.z<<std::endl;
+//            std::cout<<"foot_odom.pose.pose.position.x   "<< foot_odom.pose.pose.position.x<<std::endl;
+//            std::cout<<"foot_odom.pose.pose.position.y   "<< foot_odom.pose.pose.position.y<<std::endl;
+//            std::cout<<"foot_odom.pose.pose.position.z   "<< foot_odom.pose.pose.position.z<<std::endl;
 
 
 
@@ -504,6 +529,21 @@ private:
             rh_foot_contact_force_pub_.publish(rh_wrench_);
             LegOdom_pub.publish(foot_odom);
 
+                footpos_in_world.data[0]=LF_foot_Pos_w_real.x();
+                footpos_in_world.data[1]=LF_foot_Pos_w_real.y();
+                footpos_in_world.data[2]=LF_foot_Pos_w_real.z();
+                footpos_in_world.data[3]=RF_foot_Pos_w_real.x();
+                footpos_in_world.data[4]=RF_foot_Pos_w_real.y();
+                footpos_in_world.data[5]=RF_foot_Pos_w_real.z();
+                footpos_in_world.data[6]=RH_foot_Pos_w_real.x();
+                footpos_in_world.data[7]=RH_foot_Pos_w_real.y();
+                footpos_in_world.data[8]=RH_foot_Pos_w_real.z();
+                footpos_in_world.data[9]=LH_foot_Pos_w_real.x();
+                footpos_in_world.data[10]=LH_foot_Pos_w_real.y();
+                footpos_in_world.data[11]=LH_foot_Pos_w_real.z();
+                foot_pose_in_world_pub_.publish(footpos_in_world);
+
+
             lock.unlock();
             rate.sleep();
 
@@ -512,9 +552,9 @@ private:
 
     std::string imu_topic_name_;
     ros::NodeHandle node_handle_,np;
-    ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,iscontact_sub_,real_contact_sub_;
+    ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,iscontact_sub_,real_contact_sub_,gazebopose_sub;
     ros::Publisher jointpos_pub_,footpos_pub_,lf_foot_contact_force_pub_,rf_foot_contact_force_pub_,LegOdom_pub,
-    rh_foot_contact_force_pub_,lh_foot_contact_force_pub_,footpos_delta_pub_;
+    rh_foot_contact_force_pub_,lh_foot_contact_force_pub_,footpos_delta_pub_,foot_pose_in_world_pub_;
     boost::thread wrenchPublishThread_;
     boost::recursive_mutex r_mutex_;
     geometry_msgs::WrenchStamped lf_wrench_, rf_wrench_, rh_wrench_, lh_wrench_;
@@ -523,6 +563,7 @@ private:
     ros::Time contact_time=ros::Time::now();
     bool pronto_real,hang_test,use_gazebo_time;
     ros::Time gazebo_time;
+    geometry_msgs::Pose pose_in_world;
 
 
 };

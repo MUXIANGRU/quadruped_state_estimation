@@ -11,7 +11,7 @@ state_estimator_pronto :
   tf_child_frame_id : "base_pronto"
   republish_sensors : false
   init_sensors : [ins, pose_meas]
-  active_sensors : [ins, legodo]
+  active_sensors : [ins, pose_meas, legodo]
   utime_history_span : 60000000.0
 
   sigma0 :
@@ -80,7 +80,7 @@ state_estimator_pronto :
     legodo_mode : 1 # STATIC_SIGMA 0x00, VAR_SIGMA 0x01, IMPACT_SIGMA 0x02, WEIGHTED_AVG 0x04, ALPHA_FILTER : 0x08, KALMAN_FILTER : 0x10
 
     stance_mode : 0 # 0 : THRESHOLD, 1 : HYSTERESIS, 2 : REGRESSION
-    stance_threshold : 20 # threshold of GRF[z] to trigger the stance phase
+    stance_threshold : 10 # threshold of GRF[z] to trigger the stance phase
 
     stance_hysteresis_low : 10 # hysteresis low threshold
     stance_hysteresis_high : 60 # hysteresis high threshold

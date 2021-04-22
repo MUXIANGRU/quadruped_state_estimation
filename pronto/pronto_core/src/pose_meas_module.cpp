@@ -28,8 +28,13 @@ PoseMeasModule::PoseMeasModule(const PoseMeasConfig &cfg) :
 RBISUpdateInterface* PoseMeasModule::processMessage(const PoseMeasurement *msg,
                                                     StateEstimator *est)
 {
+
+    std::cout<<"@@@@@@@@@@@@@@@@@"<<std::endl;
+    std::cout<<" PoseMeasModule::processMessage ......"<<std::endl;
+    std::cout<<"@@@@@@@@@@@@@@@@@"<<std::endl;
     // If we have created no_corrections, go silent afterwards
-    no_corrections--;
+    //MXR::NOTE: Always do pose correction by foot_odom
+    //no_corrections--;
 
     if (no_corrections == 1) {
       std::cout << "Finished making PoseMeas corrections" << std::endl;
@@ -100,4 +105,3 @@ bool PoseMeasModule::processMessageInit(const PoseMeasurement *msg,
     return true;
 }
 } // namespace pronto
-
