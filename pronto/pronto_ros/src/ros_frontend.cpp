@@ -22,6 +22,7 @@ ROSFrontEnd::ROSFrontEnd(ros::NodeHandle& nh, bool verbose) :
                 std::cout<<" [pronto_ros/ros_frontend.cpp] get the param for pose from the config/.yaml "<<std::endl;
                 pose_pub_ = nh_.advertise<geometry_msgs::PoseWithCovarianceStamped>(pose_topic, 200);
                 pose_msg_.header.frame_id = pose_frame_id;
+                eulerAngle_pub_ = nh_.advertise<geometry_msgs::Vector3Stamped>("/laikago_state/euler",200);
             }
             std::string twist_topic = "TWIST_BODY";
             std::string twist_frame_id = "base";

@@ -18,6 +18,15 @@
 #include "boost/thread.hpp"
 #include "sensor_msgs/JointState.h"
 #include <std_msgs/Float64MultiArray.h>
+#include <tf/tf.h>
+#include <tf/LinearMath/Matrix3x3.h>
+
+
+//MXR:NOTE: for test
+#include <inekf_msgs/Contact.h>
+#include <inekf_msgs/ContactArray.h>
+#include <inekf_msgs/Kinematics.h>
+#include <inekf_msgs/KinematicsArray.h>
 
 uint64_t utime;
 uint64_t history_span = 60000000.0;
@@ -30,18 +39,12 @@ pronto::quadruped::LegBoolMap stance;
 pronto::quadruped::LegDataMap<double> stance_probability;
 pronto::LegOdometer::LegVector3Map v_base_from_leg;
 
-//pronto::quadruped::StanceEstimatorROS stance_estimator(nh,feet_forces);
-//pronto::quadruped::LegOdometerROS leg_odometer_(nh,feet_jacs,fwd_kin);
-//pronto::quadruped::ImuBiasLockROS imu_bias(nh);
-//pronto::quadruped::LegodoHandlerROS leg_handler_(nh,stance_estimator,leg_odometer_);
-//pronto::quadruped::ImuBiasLockROS bias_lock(np);
-
-//uint64_t history_span;
-//ros::NodeHandle nh_;
 
 iit::laikago::FeetContactForces feet_contact_force;
 iit::laikago::FeetJacobians feet_jacs;
 iit::laikago::ForwardKinematics fwd_kin;
+iit::rbd::Matrix33d R_lf,R_rf,R_rh,R_lh;
+Eigen::Matrix3d Rotation_lf,Rotation_rf,Rotation_rh,Rotation_lh;
 
 Eigen::Quaterniond orient;           //base orientation
 Eigen::Vector3d foot_grfLF,foot_grfRF,foot_grfLH,foot_grfRH;       //the out
@@ -79,26 +82,38 @@ public:
         //node_handle_.param("/publish_real_tf",publish_real_tf,bool(false));
        gazebopose_sub = node_handle_.subscribe("/pose_pub_node/base_pose",1,&testmaster::testposeCallback,this);
        jointstate_sub_ = node_handle_.subscribe("/joint_states", 1, &testmaster::testjointposCallback,this);
-       jointpos_pub_ = node_handle_.advertise<std_msgs::Float64MultiArray>("/test/joint_pos",1);
        jointvel_sub_ = node_handle_.subscribe("/joint_states",1,&testmaster::testjointvelCallback,this);
        jointacc_sub_ = node_handle_.subscribe("/joint_states",1,&testmaster::testjointeffCallback,this);
        iscontact_sub_ = node_handle_.subscribe("/gazebo/foot_contact_state",1,&testmaster::testcontactCallback,this);
        base_orientation_sub_ = node_handle_.subscribe(imu_topic_name_,1,&testmaster::testorientCallback,this);
-       real_contact_sub_ = node_handle_.subscribe("/laikago_contact_state",1,&testmaster::realCallback,this);
-       lf_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/lf_contact_force",1);
-       rf_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/rf_contact_force",1);
-       rh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/rh_contact_force",1);
-       lh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/lh_contact_force",1);
+       real_contact_sub_ = node_handle_.subscribe("/contact_pro",1,&testmaster::realCallback,this);
+       real_vel_sub_ = node_handle_.subscribe("/laikago_state/vel_raw",1,&testmaster::realVelCB,this);
+ //      quaternion_sub = node_handle_.subscribe("/filter/quaternion",1,&testmaster::quaternionCB,this);
+//       jointpos_pub_ = node_handle_.advertise<std_msgs::Float64MultiArray>("/test/joint_pos",1);
+//       lf_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/lf_contact_force",1);
+//       rf_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/rf_contact_force",1);
+//       rh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/rh_contact_force",1);
+//       lh_foot_contact_force_pub_=node_handle_.advertise<geometry_msgs::WrenchStamped>("/laikago_pronto/lh_contact_force",1);
        footpos_pub_=node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_in_base",1);
        foot_pose_in_world_pub_ = node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_in_world",1);
        footpos_delta_pub_=node_handle_.advertise<std_msgs::Float64MultiArray>("/laikago_pronto/foot_position_delta",1);
        LegOdom_pub = node_handle_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/laikago_pronto/foot_odom",1);
+       raw_pose_pub_ = node_handle_.advertise<geometry_msgs::PoseWithCovarianceStamped>("/laikago_pronto/rawpose",1);
+       euler_pub = node_handle_.advertise<geometry_msgs::Vector3>("/laikago_pronto/euler",1);
+       euler_filter_pub = node_handle_.advertise<geometry_msgs::Vector3>("/laikago_pronto/euler_filter",1);
+//       inekf_kinpub = node_handle_.advertise<inekf_msgs::KinematicsArray>("/kinematics",1);
+//       inekf_contactpub = node_handle_.advertise<inekf_msgs::ContactArray>("/contacts",1);
+
+
        jointpos_.data.resize(12);
        footpos_.data.resize(12);
        footpos_delta.data.resize(12);
        footpos_in_world.data.resize(12);
        foot_iscontact.data.resize(4);
        real_foot_iscontact.data.resize(4);
+       kinmsg_.frames.resize(4);
+       conmsg_.contacts.resize(4);
+
        Initparams();
        wrenchPublishThread_ = boost::thread(boost::bind(&testmaster::jointpospublish, this));
 //       pronto::quadruped::StanceEstimatorROS stance_estimator_(node_handle_,feet_contact_force);
@@ -112,6 +127,25 @@ public:
        pose_in_world.position.x = pose->pose.pose.position.x;
        pose_in_world.position.y = pose->pose.pose.position.y;
        pose_in_world.position.z = pose->pose.pose.position.z;
+    }
+//    void quaternionCB(const geometry_msgs::QuaternionStamped::ConstPtr& qua){
+
+//        double roll,pitch,yaw;
+//        tf::Quaternion q;
+//        q.setW(qua->quaternion.w);
+//        q.setX(qua->quaternion.x);
+//        q.setY(qua->quaternion.y);
+//        q.setZ(qua->quaternion.z);
+//        tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+//        euler_filter.x = roll;
+//        euler_filter.y = pitch;
+//        euler_filter.z = yaw;
+
+//    }
+    void realVelCB(const geometry_msgs::TwistWithCovarianceStampedConstPtr& msg){
+        xd.x()=msg->twist.twist.linear.x;
+        xd.y()=msg->twist.twist.linear.y;
+        xd.z()=msg->twist.twist.linear.z;
     }
     void Initparams(){
            foot_odom.pose.pose.position.x = 0.0;
@@ -130,11 +164,30 @@ public:
         //NOTE!!!!!!!!!!!!!!!
         foot_iscontact.data[0]=contact_states->data[0];
         foot_iscontact.data[1]=contact_states->data[1];
-        foot_iscontact.data[2]=contact_states->data[2];
-        foot_iscontact.data[3]=contact_states->data[3];
+        foot_iscontact.data[2]=contact_states->data[3];
+        foot_iscontact.data[3]=contact_states->data[2];
+
+//        conmsg_.contacts[0].id=0;
+//        conmsg_.contacts[1].id=1;
+//        conmsg_.contacts[2].id=2;
+//        conmsg_.contacts[3].id=3;
+//        conmsg_.contacts[0].indicator=contact_states->data[0];
+//        conmsg_.contacts[1].indicator=contact_states->data[1];
+//        conmsg_.contacts[2].indicator=contact_states->data[2];
+//        conmsg_.contacts[3].indicator=contact_states->data[3];
+
+
+//        conmsg_.contacts[0].id=1;
+//        conmsg_.contacts[1].id=0;
+//        conmsg_.contacts[2].id=2;
+//        conmsg_.contacts[3].id=3;
+//        conmsg_.contacts[0].indicator=contact_states->data[1];
+//        conmsg_.contacts[1].indicator=contact_states->data[0];
+//        conmsg_.contacts[2].indicator=contact_states->data[3];
+//        conmsg_.contacts[3].indicator=contact_states->data[2];
     }
     void testjointvelCallback(const sensor_msgs::JointStateConstPtr& joint_states){
-        qd<<joint_states->velocity[0],joint_states->velocity[1],joint_states->velocity[2],               
+        qd<<joint_states->velocity[0],joint_states->velocity[1],joint_states->velocity[2],
                 joint_states->velocity[6],joint_states->velocity[7],joint_states->velocity[8],
                 joint_states->velocity[9],joint_states->velocity[10],joint_states->velocity[11],
                 joint_states->velocity[3],joint_states->velocity[4],joint_states->velocity[5];
@@ -144,6 +197,24 @@ public:
         orient.y()=imu_msg->orientation.y;
         orient.z()=imu_msg->orientation.z;
         orient.w()=imu_msg->orientation.w;
+        omega.x()=imu_msg->angular_velocity.x;
+        omega.y()=imu_msg->angular_velocity.y;
+        omega.z()=imu_msg->angular_velocity.z;
+        xdd.x()=imu_msg->linear_acceleration.x;
+        xdd.y()=imu_msg->linear_acceleration.y;
+        xdd.z()=imu_msg->linear_acceleration.z-9.8;
+
+        double roll,pitch,yaw;
+        tf::Quaternion q;
+        q.setW(orient.w());
+        q.setX(orient.x());
+        q.setY(orient.y());
+        q.setZ(orient.z());
+        tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+        euler.x = roll;
+        euler.y = pitch;
+        euler.z = yaw;
+
         rotation_matrix_trans = orient.normalized().toRotationMatrix();
 
         imu_msg_.header = imu_msg->header;
@@ -213,7 +284,60 @@ public:
             footpos_.data[10]=fwd_kin.getFootPos(q,pronto::quadruped::LegID::RH)[1];
             footpos_.data[11]=fwd_kin.getFootPos(q,pronto::quadruped::LegID::RH)[2];
 
+            //get foot orientation
+            R_lf=fwd_kin.getFootOrientation(q,pronto::quadruped::LegID::LF);
+            R_rf=fwd_kin.getFootOrientation(q,pronto::quadruped::LegID::RF);
+            R_lh=fwd_kin.getFootOrientation(q,pronto::quadruped::LegID::LH);
+            R_rh=fwd_kin.getFootOrientation(q,pronto::quadruped::LegID::RH);
+
+            Rotation_lf=R_lf;
+            Rotation_lh=R_lh;
+            Rotation_rf=R_rf;
+            Rotation_rh=R_rh;
+            Eigen::Quaterniond q_lf(Rotation_lf);
+            Eigen::Quaterniond q_rf(Rotation_rf);
+            Eigen::Quaterniond q_lh(Rotation_lh);
+            Eigen::Quaterniond q_rh(Rotation_rh);
+
+            kinmsg_.frames[0].id=0;
+            kinmsg_.frames[1].id=1;
+            kinmsg_.frames[2].id=2;
+            kinmsg_.frames[3].id=3;
+            kinmsg_.frames[0].pose.pose.position.x=footpos_.data[0];
+            kinmsg_.frames[0].pose.pose.position.y=footpos_.data[1];
+            kinmsg_.frames[0].pose.pose.position.z=footpos_.data[2];
+            kinmsg_.frames[0].pose.pose.orientation.w=q_lf.w();
+            kinmsg_.frames[0].pose.pose.orientation.x=q_lf.x();
+            kinmsg_.frames[0].pose.pose.orientation.y=q_lf.y();
+            kinmsg_.frames[0].pose.pose.orientation.z=q_lf.z();
+
+            kinmsg_.frames[1].pose.pose.position.x=footpos_.data[3];
+            kinmsg_.frames[1].pose.pose.position.y=footpos_.data[4];
+            kinmsg_.frames[1].pose.pose.position.z=footpos_.data[5];
+            kinmsg_.frames[1].pose.pose.orientation.w=q_rf.w();
+            kinmsg_.frames[1].pose.pose.orientation.x=q_rf.x();
+            kinmsg_.frames[1].pose.pose.orientation.y=q_rf.y();
+            kinmsg_.frames[1].pose.pose.orientation.z=q_rf.z();
+
+            kinmsg_.frames[2].pose.pose.position.x=footpos_.data[9];
+            kinmsg_.frames[2].pose.pose.position.y=footpos_.data[10];
+            kinmsg_.frames[2].pose.pose.position.z=footpos_.data[11];
+            kinmsg_.frames[2].pose.pose.orientation.w=q_rh.w();
+            kinmsg_.frames[2].pose.pose.orientation.x=q_rh.x();
+            kinmsg_.frames[2].pose.pose.orientation.y=q_rh.y();
+            kinmsg_.frames[2].pose.pose.orientation.z=q_rh.z();
+
+            kinmsg_.frames[3].pose.pose.position.x=footpos_.data[6];
+            kinmsg_.frames[3].pose.pose.position.y=footpos_.data[7];
+            kinmsg_.frames[3].pose.pose.position.z=footpos_.data[8];
+            kinmsg_.frames[3].pose.pose.orientation.w=q_lh.w();
+            kinmsg_.frames[3].pose.pose.orientation.x=q_lh.x();
+            kinmsg_.frames[3].pose.pose.orientation.y=q_lh.y();
+            kinmsg_.frames[3].pose.pose.orientation.z=q_lh.z();
+
+
             gazebo_time = joint_state_.header.stamp;
+
 
 
     //    q(0,0)=joint_states->position[0];
@@ -240,17 +364,10 @@ public:
 //        lf_wrench_.wrench.force.y= foot_grfLF[1];
 //        lf_wrench_.wrench.force.z= foot_grfLF[2];
 //    }
-    Eigen::Vector3d getposDelta(Eigen::Matrix3d& orient,Eigen::Vector3d& footpos){
+   Eigen::Vector3d getposDelta(Eigen::Matrix3d& orient,Eigen::Vector3d& footpos){
         Eigen::Vector3d pos_delta;
         pos_delta = orient*footpos-footpos;
         return pos_delta;
-    }
-
-   void testimu_bias_lock(pronto::quadruped::ImuBiasLockROS& bias,pronto::StateEstimator *est){
-        bias.processMessage(&imu_msg_,est);
-    }
-   void testleg_odom(pronto::quadruped::LegodoHandlerROS& handler,pronto::StateEstimator *est){
-        handler.processMessage(&joint_state_,est);
     }
    sensor_msgs::JointState getJointState(){
         return joint_state_;
@@ -303,16 +420,6 @@ public:
         base_position = (foot_contact.data[0]*lf_sum+foot_contact.data[1]*rf_sum+foot_contact.data[3]*lh_sum+foot_contact.data[2]*rh_sum)/2;
         return base_position;
     }
-//    void processdata(){
-//        pronto::quadruped::StanceEstimatorROS stance_estimator(nh,feet_forces);
-//        pronto::quadruped::LegOdometerROS leg_odometer_(nh,feet_jacs,fwd_kin);
-//        pronto::quadruped::ImuBiasLockROS imu_bias(nh);
-//        //pronto::quadruped::ImuBiasLockBaseROS<pronto::JointState> bias_lock(nh);
-//        pronto::quadruped::LegodoHandlerROS leg_handler_(nh,stance_estimator,leg_odometer_);
-//        //pronto::quadruped::ImuBiasLock
-//        //pronto::ProntoNode<sensor_msgs::JointState> node(nh, leg_handler_, imu_bias);
-//        //node.run();
-//    }
 
 private:
     void jointpospublish(){
@@ -321,7 +428,7 @@ private:
 //        lf_wrench_.wrench.force.x= foot_grfLF[0];
 //        lf_wrench_.wrench.force.y= foot_grfLF[1];
 //        lf_wrench_.wrench.force.z= foot_grfLF[2];
-        ros::Rate rate(400);
+        ros::Rate rate(200);
         while (ros::ok()) {
             LF_foot_Pos_b<<footpos_.data[0],footpos_.data[1],footpos_.data[2];
             RF_foot_Pos_b<<footpos_.data[3],footpos_.data[4],footpos_.data[5];
@@ -333,13 +440,13 @@ private:
 //            std::cout<<"LH_foot_Pos_b        "<<LH_foot_Pos_b<<std::endl;
 //            std::cout<<"RH_foot_Pos_b        "<<RH_foot_Pos_b<<std::endl;
 
-
-
             LF_foot_Pos_w = rotation_matrix_trans*LF_foot_Pos_b;
             RF_foot_Pos_w = rotation_matrix_trans*RF_foot_Pos_b;
             LH_foot_Pos_w = rotation_matrix_trans*LH_foot_Pos_b;
             RH_foot_Pos_w = rotation_matrix_trans*RH_foot_Pos_b;
 
+            //MXR::NOTE: get the foot position in world link
+            // it doesn't concerned with the legodom computation
             if(!pronto_real){
                 Eigen::Vector3d POSE_IN_WORLD;
                 POSE_IN_WORLD<<pose_in_world.position.x,pose_in_world.position.y,pose_in_world.position.z;
@@ -363,6 +470,7 @@ private:
 //            std::cout<<"RF_foot_Pos_w        "<<RF_foot_Pos_w<<std::endl;
 //            std::cout<<"LH_foot_Pos_w        "<<LH_foot_Pos_w<<std::endl;
 //            std::cout<<"RH_foot_Pos_w        "<<RH_foot_Pos_w<<std::endl;
+
             //MXR::NOTE: just for initialization
             if(pre_LF_foot_Pos_w[0]==0.0&&pre_LF_foot_Pos_w[1]==0.0&&pre_LF_foot_Pos_w[2]==0.0){
                pre_LF_foot_Pos_w = LF_foot_Pos_w;
@@ -370,6 +478,7 @@ private:
                pre_RH_foot_Pos_w = RH_foot_Pos_w;
                pre_LH_foot_Pos_w = LH_foot_Pos_w;
             }
+            //MXR::NOTE:  get the foot position delta in the world_link between [t_i,t_(i+1)]
             if(foot_iscontact.data[0]==1.0||real_foot_iscontact.data[0]==1.0){
                 footpos_delta.data[0]=LF_foot_Pos_w[0]-pre_LF_foot_Pos_w[0];
                 footpos_delta.data[1]=LF_foot_Pos_w[1]-pre_LF_foot_Pos_w[1];
@@ -431,10 +540,6 @@ private:
                 //real_dog
                 std::cout<<real_foot_iscontact.data[0]<<" "<<real_foot_iscontact.data[1]<<" "
                                                      <<real_foot_iscontact.data[2]<<" "<<real_foot_iscontact.data[3]<<std::endl;
-//                std::cout<<"LF_foot_Pos_delta   "<<LF_foot_Pos_delta<<std::endl;
-//                std::cout<<"RF_foot_Pos_delta   "<<RF_foot_Pos_delta<<std::endl;
-//                std::cout<<"RH_foot_Pos_delta   "<<RH_foot_Pos_delta<<std::endl;
-//                std::cout<<"LH_foot_Pos_delta   "<<LH_foot_Pos_delta<<std::endl;
                 x_delta = ((LF_foot_Pos_delta.x()*real_foot_iscontact.data[0]+
                                    RF_foot_Pos_delta.x()*real_foot_iscontact.data[1]+RH_foot_Pos_delta.x()*real_foot_iscontact.data[2]+LH_foot_Pos_delta.x()*real_foot_iscontact.data[3])*weight);
                 y_delta = (weight)*(LF_foot_Pos_delta.y()*real_foot_iscontact.data[0]+
@@ -473,6 +578,9 @@ private:
             foot_odom.pose.pose.position.x +=(-x_delta);
             foot_odom.pose.pose.position.y +=(-y_delta);
             foot_odom.pose.pose.position.z =(-z_delta+0.01);  //0.02 for foot radius???
+            foot_odom.pose.covariance[0]=0.005;
+            foot_odom.pose.covariance[7]=0.005;
+            foot_odom.pose.covariance[14]=0.005;
 
 
 
@@ -529,20 +637,38 @@ private:
             rh_foot_contact_force_pub_.publish(rh_wrench_);
             LegOdom_pub.publish(foot_odom);
 
-                footpos_in_world.data[0]=LF_foot_Pos_w_real.x();
-                footpos_in_world.data[1]=LF_foot_Pos_w_real.y();
-                footpos_in_world.data[2]=LF_foot_Pos_w_real.z();
-                footpos_in_world.data[3]=RF_foot_Pos_w_real.x();
-                footpos_in_world.data[4]=RF_foot_Pos_w_real.y();
-                footpos_in_world.data[5]=RF_foot_Pos_w_real.z();
-                footpos_in_world.data[6]=RH_foot_Pos_w_real.x();
-                footpos_in_world.data[7]=RH_foot_Pos_w_real.y();
-                footpos_in_world.data[8]=RH_foot_Pos_w_real.z();
-                footpos_in_world.data[9]=LH_foot_Pos_w_real.x();
-                footpos_in_world.data[10]=LH_foot_Pos_w_real.y();
-                footpos_in_world.data[11]=LH_foot_Pos_w_real.z();
-                foot_pose_in_world_pub_.publish(footpos_in_world);
+            kinmsg_.header.stamp=gazebo_time;
+            conmsg_.header.stamp=gazebo_time;
+            inekf_kinpub.publish(kinmsg_);
+            inekf_contactpub.publish(conmsg_);
 
+            footpos_in_world.data[0]=LF_foot_Pos_w_real.x();
+            footpos_in_world.data[1]=LF_foot_Pos_w_real.y();
+            footpos_in_world.data[2]=LF_foot_Pos_w_real.z();
+            footpos_in_world.data[3]=RF_foot_Pos_w_real.x();
+            footpos_in_world.data[4]=RF_foot_Pos_w_real.y();
+            footpos_in_world.data[5]=RF_foot_Pos_w_real.z();
+            footpos_in_world.data[6]=RH_foot_Pos_w_real.x();
+            footpos_in_world.data[7]=RH_foot_Pos_w_real.y();
+            footpos_in_world.data[8]=RH_foot_Pos_w_real.z();
+            footpos_in_world.data[9]=LH_foot_Pos_w_real.x();
+            footpos_in_world.data[10]=LH_foot_Pos_w_real.y();
+            footpos_in_world.data[11]=LH_foot_Pos_w_real.z();
+            foot_pose_in_world_pub_.publish(footpos_in_world);
+
+            rawPose.pose.pose.position.x = foot_odom.pose.pose.position.x;
+            rawPose.pose.pose.position.y = foot_odom.pose.pose.position.y;
+            rawPose.pose.pose.position.z = foot_odom.pose.pose.position.z;
+//            rawPose.pose.covariance[0] = foot_odom.pose.covariance[0];
+//            rawPose.pose.covariance[7] = foot_odom.pose.covariance[7];
+//            rawPose.pose.covariance[14] = foot_odom.pose.covariance[14];
+            rawPose.pose.pose.orientation.w = imu_msg_.orientation.w;
+            rawPose.pose.pose.orientation.x = imu_msg_.orientation.x;
+            rawPose.pose.pose.orientation.y = imu_msg_.orientation.y;
+            rawPose.pose.pose.orientation.z = imu_msg_.orientation.z;
+            raw_pose_pub_.publish(rawPose);
+            euler_pub.publish(euler);
+            //euler_filter_pub.publish(euler_filter);
 
             lock.unlock();
             rate.sleep();
@@ -552,9 +678,11 @@ private:
 
     std::string imu_topic_name_;
     ros::NodeHandle node_handle_,np;
-    ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,iscontact_sub_,real_contact_sub_,gazebopose_sub;
+    ros::Subscriber jointstate_sub_,jointvel_sub_,jointacc_sub_,base_orientation_sub_,
+    iscontact_sub_,real_contact_sub_,gazebopose_sub,quaternion_sub,real_vel_sub_;
     ros::Publisher jointpos_pub_,footpos_pub_,lf_foot_contact_force_pub_,rf_foot_contact_force_pub_,LegOdom_pub,
-    rh_foot_contact_force_pub_,lh_foot_contact_force_pub_,footpos_delta_pub_,foot_pose_in_world_pub_;
+    rh_foot_contact_force_pub_,lh_foot_contact_force_pub_,footpos_delta_pub_,foot_pose_in_world_pub_,raw_pose_pub_,
+    euler_pub,euler_filter_pub,inekf_kinpub,inekf_contactpub;
     boost::thread wrenchPublishThread_;
     boost::recursive_mutex r_mutex_;
     geometry_msgs::WrenchStamped lf_wrench_, rf_wrench_, rh_wrench_, lh_wrench_;
@@ -564,6 +692,10 @@ private:
     bool pronto_real,hang_test,use_gazebo_time;
     ros::Time gazebo_time;
     geometry_msgs::Pose pose_in_world;
+    geometry_msgs::PoseWithCovarianceStamped rawPose;
+    geometry_msgs::Vector3 euler,euler_filter;
+    inekf_msgs::KinematicsArray kinmsg_;
+    inekf_msgs::ContactArray conmsg_;
 
 
 };
@@ -586,31 +718,7 @@ int main(int argc,char **argv){
     pronto::quadruped::LegodoHandlerROS leg_handler_(nh_,stance_estimator,leg_odometer_);
     pronto::ProntoNode<sensor_msgs::JointState> node(nh_, leg_handler_, bias);
     node.run();
-//       std::cout<<"*************"<<std::endl;
-//       std::cout<<foot_grfLF<<std::endl;
-//       std::cout<<"*************"<<std::endl;
-//    std::cout<<"*************"<<std::endl;
-//    std::cout<<testmaster.getIMUState()<<std::endl;
-//    std::cout<<testmaster.getJointState()<<std::endl;
 
-    //stance_estimator_.getGRF();
-
-
-
-
-    //ros::Duration(0.5).sleep();
-//    ros::Rate loop_rate(50);
-//    while (ros::ok()) {
-
-//       testmaster.testimu_bias_lock(bias,&estimator);
-////        std::cout<<"*************"<<std::endl;
-// //       std::cout<<testmaster.getIMUState()<<std::endl;
-////        std::cout<<testmaster.getJointState()<<std::endl;
-////       testmaster.testleg_odom(leg_handler_);
-
-//       ros::spinOnce();
-//       loop_rate.sleep();
-//      }
     return 0;
 
 

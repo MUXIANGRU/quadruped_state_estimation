@@ -13,15 +13,11 @@
   </include> -->
 
   <!--<node name="pose_means" pkg="pronto_laikago" type="pose_means" output="screen" /> -->
-  <param name="/hang_test" value="false" />
-  <param name="/pronto_real" value="true" />
-  <param name="/imu_topic_name" value="/imu/data" />
-  <rosparam command="load" file="$(find pronto_laikago)/config/laikago_test_real.yaml" />
   <!-- launch the Pronto laikago node -->
-  <node name="laikago_state" pkg="pronto_laikago" type="laikago_state" output="screen" />
+  <node name="laikago_state" pkg="pronto_laikago" type="laikago_test" output="screen" />
 
 
   <!-- tf_publisher -->
-  <!--<include file="$(find pronto_laikago)/launch/pose_to_tf.launch">
-</include> -->
+  <include file="$(find pronto_laikago)/launch/pose_to_tf.launch"> 
+  </include> 
 </launch>

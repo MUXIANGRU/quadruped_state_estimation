@@ -10,7 +10,7 @@ ros::Publisher pose_measn_Pub;
 ros::Subscriber real_pose_Sub_,real_imu_Sub_,real_pronto_pose_Sub_;
 geometry_msgs::PoseWithCovarianceStamped pose_means;
 ros::Time br_time;
-tf::Transform base_to_odom,odom_to_footprint;
+tf::Transform base_to_odom,odom_to_footprint,footprint_to_base;
 std::string tf_publish_way;
 void positionCB(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& position){
     if(tf_publish_way=="kin_and_imu"){
@@ -25,6 +25,7 @@ void positionCB(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& positi
         odom_to_footprint.setOrigin(tf::Vector3(pose_means.pose.pose.position.x,
                                     pose_means.pose.pose.position.y,
                                     0));
+        footprint_to_base.setOrigin(tf::Vector3(0,0,pose_means.pose.pose.position.z));
     }
 
 }
@@ -55,6 +56,7 @@ void orientationCB(const sensor_msgs::Imu::ConstPtr& orientation){
     //        ROS_INFO("q1.z(): %f", q1.z());
     //        std::cout<<"mode    "<<sqrt(q1.w()*q1.w()+q1.x()*q1.x()+q1.y()*q1.y()+q1.z()*q1.z())<<std::endl;
             base_to_odom.setRotation(q_rot);
+            footprint_to_base.setRotation(tf::createQuaternionFromRPY(roll,pitch,0));
     }
 
 }
@@ -101,7 +103,7 @@ int main(int argc, char** argv) {
     tf::TransformBroadcaster tfBoardcaster_;//把这行放到初始化函数的外面会报上面的错。You must call ros::init() before creating the first NodeHandle
 
     nh_.param("/tf_publish_way",tf_publish_way,std::string("kin_and_imu"));
-    real_pose_Sub_ = nh_.subscribe("/laikago_pronto/foot_odom",1,&positionCB);
+    real_pose_Sub_ = nh_.subscribe("/laikago/foot_odom",1,&positionCB);
     real_imu_Sub_ = nh_.subscribe("/imu/data",1,&orientationCB);
     real_pronto_pose_Sub_ = nh_.subscribe("/laikago_state/pose",1,&prontoCB);
 
@@ -138,8 +140,9 @@ int main(int argc, char** argv) {
         //br_time  = pose_means.header.stamp;
         br_time = ros::Time::now();
         //pose_measn_Pub.publish(pose_means);
-        tfBoardcaster_.sendTransform(tf::StampedTransform(base_to_odom, br_time, "/odom", "/base"));
+        //tfBoardcaster_.sendTransform(tf::StampedTransform(base_to_odom, br_time, "/odom", "/base"));
         tfBoardcaster_.sendTransform(tf::StampedTransform(odom_to_footprint,br_time,"/odom","/foot_print"));
+        tfBoardcaster_.sendTransform(tf::StampedTransform(footprint_to_base, br_time, "/foot_print", "/base"));
         ros::spinOnce();
         rate.sleep();
       }

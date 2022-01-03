@@ -11,7 +11,7 @@ state_estimator_pronto :
   tf_child_frame_id : "base_pronto"
   republish_sensors : false
   init_sensors : [ins]
-  active_sensors : [ins, legodo]
+  active_sensors : [ins,legodo,pose_meas]
   utime_history_span : 60000000.0
 
   sigma0 :
@@ -35,7 +35,7 @@ state_estimator_pronto :
   ins :
     topic : "/imu/data"
     utime_offset : 0 # units 1e-6 seconds
-    downsample_factor : 5 # process 1 out of every this many. for 333Hz use 1. for 1kHz use 3
+    downsample_factor : 1 # process 1 out of every this many. for 333Hz use 1. for 1kHz use 3
     roll_forward_on_receive : true
     publish_head_on_message : true
 
@@ -67,7 +67,7 @@ state_estimator_pronto :
     timestep_dt : 0.001 #
 
     # attempt to detect drastically incorrect initial gyro biases estimates:
-    max_initial_gyro_bias : 0.015 # deg/sec, biases above this will be set to zero
+    max_initial_gyro_bias : 0.0025 # deg/sec, biases above this will be set to zero
 
   legodo :
     topic : "/joint_states"
@@ -94,7 +94,7 @@ state_estimator_pronto :
     stance_regression_beta : [3.7252,-0.018077,2.8191,-0.015947,3.2241,-0.018661,3.8836,-0.019669]
     r_vx : 0.02 # sigma velocity x
     r_vy : 0.02 # sigma velocity y
-    r_vz : 0.12 # sigma velocity z
+    r_vz : 0.02 # sigma velocity z
 
     # true only if you have stance ground truth from simulation
     # im_stance_gt : false

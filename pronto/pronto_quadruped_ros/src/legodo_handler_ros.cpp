@@ -71,7 +71,7 @@ LegodoHandlerBase::LegodoHandlerBase(ros::NodeHandle &nh,
             grf_debug_.push_back(nh.advertise<geometry_msgs::WrenchStamped>(leg_names[i]+ "_grf", 10));
         }
 
-        vel_raw_ = nh.advertise<geometry_msgs::TwistStamped>("vel_raw", 10);
+        vel_raw_ = nh.advertise<geometry_msgs::TwistWithCovarianceStamped>("vel_raw", 10);
         stance_pub_ = nh.advertise<pronto_msgs::QuadrupedStance>("stance", 10);
 
         dl_pose_.reset(new pronto::DataLogger("prontopos.txt"));
@@ -189,25 +189,25 @@ LegodoHandlerBase::Update * LegodoHandlerBase::computeVelocity ()
         if(debug_){
             LegOdometerBase::LegVectorMap veldebug;
             leg_odometer_.getVelocitiesFromLegs(veldebug);
-            geometry_msgs::TwistStamped twist;
+            geometry_msgs::TwistWithCovarianceStamped twist;
             twist.header.stamp = ros::Time().fromNSec(utime_*1000);
-            twist.twist.angular.x = 0;
-            twist.twist.angular.y = 0;
-            twist.twist.angular.z = 0;
+            twist.twist.twist.angular.x = 0;
+            twist.twist.twist.angular.y = 0;
+            twist.twist.twist.angular.z = 0;
 
             // publish the estimated velocity for each individual leg
             for(int i=0; i<4; i++){
                 //veldebug is gotten from legodom
-                twist.twist.linear.x = veldebug[pronto::quadruped::LegID(i)](0);
-                twist.twist.linear.y = veldebug[pronto::quadruped::LegID(i)](1);
-                twist.twist.linear.z = veldebug[pronto::quadruped::LegID(i)](2);
+                twist.twist.twist.linear.x = veldebug[pronto::quadruped::LegID(i)](0);
+                twist.twist.twist.linear.y = veldebug[pronto::quadruped::LegID(i)](1);
+                twist.twist.twist.linear.z = veldebug[pronto::quadruped::LegID(i)](2);
                 vel_debug_[i].publish(twist);
             }
             // publish the estimated velocity from the leg odometer
             // before it gets passed to the filter
-            twist.twist.linear.x = xd_(0);
-            twist.twist.linear.y = xd_(1);
-            twist.twist.linear.z = xd_(2);
+            twist.twist.twist.linear.x = xd_(0);
+            twist.twist.twist.linear.y = xd_(1);
+            twist.twist.twist.linear.z = xd_(2);
 
 
 

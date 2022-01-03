@@ -50,6 +50,19 @@ Vector3d ForwardKinematics::getFootPosRH(const JointState& q){
     return Utils::positionVector(ht_.fr_base_X_fr_RH_HIP(q)*ht_.fr_RH_HIP_X_fr_RH_THIGH(q)*ht_.fr_RH_THIGH_X_fr_RH_SHANK(q)*ht_.fr_SHANK_TO_FOOT);
 }
 
+Vector3d ForwardKinematics::getHipLF(const JointState &q){
+    return Utils::positionVector(ht_.fr_base_X_fr_LF_HIP(q));
+}
+Vector3d ForwardKinematics::getHipRF(const JointState &q){
+    return Utils::positionVector(ht_.fr_base_X_fr_RF_HIP(q));
+}
+Vector3d ForwardKinematics::getHipRH(const JointState &q){
+    return Utils::positionVector(ht_.fr_base_X_fr_RH_HIP(q));
+}
+Vector3d ForwardKinematics::getHipLH(const JointState &q){
+    return Utils::positionVector(ht_.fr_base_X_fr_LH_HIP(q));
+}
+
 Vector3d ForwardKinematics::getFootPos(const JointState& q, const LegID& leg){
     switch(leg){
     case LegID::LF:
@@ -69,13 +82,13 @@ Matrix3d ForwardKinematics::getFootOrientation(const JointState &q, const LegID 
 
     switch(leg){
     case LegID::LF:
-        return Utils::rotationMx(ht_.fr_base_X_fr_LF_HIP);
+        return Utils::rotationMx(ht_.fr_base_X_fr_LF_HIP(q)*ht_.fr_LF_HIP_X_fr_LF_THIGH(q)*ht_.fr_LF_THIGH_X_fr_LF_SHANK(q)*ht_.fr_SHANK_TO_FOOT);
     case LegID::RF:
-        return Utils::rotationMx(ht_.fr_base_X_fr_RF_HIP);
+        return Utils::rotationMx(ht_.fr_base_X_fr_RF_HIP(q)*ht_.fr_RF_HIP_X_fr_RF_THIGH(q)*ht_.fr_RF_THIGH_X_fr_RF_SHANK(q)*ht_.fr_SHANK_TO_FOOT);
     case LegID::LH:
-        return Utils::rotationMx(ht_.fr_base_X_fr_LH_HIP);
+        return Utils::rotationMx(ht_.fr_base_X_fr_LH_HIP(q)*ht_.fr_LH_HIP_X_fr_LH_THIGH(q)*ht_.fr_LH_THIGH_X_fr_LH_SHANK(q)*ht_.fr_SHANK_TO_FOOT);
     case LegID::RH:
-        return Utils::rotationMx(ht_.fr_base_X_fr_RH_HIP);
+        return Utils::rotationMx(ht_.fr_base_X_fr_RH_HIP(q)*ht_.fr_RH_HIP_X_fr_RH_THIGH(q)*ht_.fr_RH_THIGH_X_fr_RH_SHANK(q)*ht_.fr_SHANK_TO_FOOT);
     default:
         std::cerr << "[ ForwardKinematics::getFootOrientation(...) ] "
                   << "ERROR: legID not recognized. Returning identity."

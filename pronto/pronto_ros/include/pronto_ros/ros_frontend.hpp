@@ -14,6 +14,7 @@
 #include <cxxabi.h>
 #include <nav_msgs/Path.h>
 #include <eigen_conversions/eigen_msg.h>
+#include <deque>
 
 template<typename T>
 std::string type_name()
@@ -127,7 +128,7 @@ private:
     RBIS head_state;
     RBIM head_cov;
 
-    ros::Publisher pose_pub_;
+    ros::Publisher pose_pub_,eulerAngle_pub_;
     ros::Publisher twist_pub_;
     tf::TransformBroadcaster tf_broadcaster_;
     tf::StampedTransform tf_pose_;
@@ -143,9 +144,12 @@ private:
 
     tf::Vector3 temp_v3;
     tf::Quaternion temp_q;
+    geometry_msgs::Vector3Stamped euler;
 
     bool filter_initialized_ = false;
     bool verbose_ = true;
+    std::deque<geometry_msgs::TwistWithCovarianceStamped> vel_buffer;
+
 
 
 };
@@ -469,12 +473,31 @@ std::cerr << ":::::::" << std::endl;
               }
             }
             //MXR::NOTE: JUST FOR LAIKAGO
-            twist_msg_.twist.twist.linear.x = twist_msg_.twist.twist.linear.x/3;
-            twist_msg_.twist.twist.linear.y = twist_msg_.twist.twist.linear.y/3;
-            twist_msg_.twist.twist.linear.z = twist_msg_.twist.twist.linear.z/9;
+            twist_msg_.twist.twist.linear.x = twist_msg_.twist.twist.linear.x;
+            twist_msg_.twist.twist.linear.y = twist_msg_.twist.twist.linear.y;
+            twist_msg_.twist.twist.linear.z = twist_msg_.twist.twist.linear.z;
             twist_msg_.twist.twist.angular.x = twist_msg_.twist.twist.angular.x/3;
             twist_msg_.twist.twist.angular.y = twist_msg_.twist.twist.angular.y/3;
             twist_msg_.twist.twist.angular.z = twist_msg_.twist.twist.angular.z/3;
+            geometry_msgs::TwistWithCovarianceStamped vel_out;
+            vel_buffer.push_back(twist_msg_);
+            if(vel_buffer.size()>10){
+                vel_buffer.pop_front();
+                for(int i=0;i<10;i++){
+                    vel_out.twist.twist.linear.x+=vel_buffer[i].twist.twist.linear.x;
+                    vel_out.twist.twist.linear.y+=vel_buffer[i].twist.twist.linear.y;
+                    vel_out.twist.twist.linear.z+=vel_buffer[i].twist.twist.linear.z;
+                    vel_out.twist.twist.angular.x+=vel_buffer[i].twist.twist.angular.x;
+                    vel_out.twist.twist.angular.y+=vel_buffer[i].twist.twist.angular.y;
+                    vel_out.twist.twist.angular.z+=vel_buffer[i].twist.twist.angular.z;
+                }
+                vel_out.twist.twist.linear.x/=10;
+                vel_out.twist.twist.linear.y/=10;
+                vel_out.twist.twist.linear.z/=10;
+                vel_out.twist.twist.angular.x/=10;
+                vel_out.twist.twist.angular.y/=10;
+                vel_out.twist.twist.angular.z/=10;
+            }
             // publish the twist
             twist_pub_.publish(twist_msg_);
 
@@ -488,6 +511,17 @@ std::cerr << ":::::::" << std::endl;
             // fill in message orientation
             tf::quaternionEigenToTF(head_state.orientation(), temp_q);
             tf::quaternionTFToMsg(temp_q,pose_msg_.pose.pose.orientation);
+            tf::Quaternion q;
+            double roll,pitch,yaw;
+            q.setW(pose_msg_.pose.pose.orientation.w);
+            q.setX(pose_msg_.pose.pose.orientation.x);
+            q.setY(pose_msg_.pose.pose.orientation.y);
+            q.setZ(pose_msg_.pose.pose.orientation.z);
+            tf::Matrix3x3(q).getRPY(roll, pitch, yaw);
+            //euler.header.stamp = ros::Time().fromNSec(head_state.utime * 1000);
+            euler.vector.x = roll;
+            euler.vector.y = pitch;
+            euler.vector.z = yaw;
 
             // fill in time
             pose_msg_.header.stamp = ros::Time().fromNSec(head_state.utime * 1000);
@@ -505,6 +539,7 @@ std::cerr << ":::::::" << std::endl;
             // TODO insert appropriate covariance into the message
             // publish the pose
             pose_pub_.publish(pose_msg_);
+            eulerAngle_pub_.publish(euler);
         }
 #if DEBUG_MODE
         end = std::chrono::high_resolution_clock::now();

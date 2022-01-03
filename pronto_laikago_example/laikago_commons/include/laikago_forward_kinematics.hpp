@@ -26,6 +26,11 @@ public:
 
     Vector3d getFootPosRH(const JointState& q);
 
+    Vector3d getHipLF(const JointState& q);
+    Vector3d getHipRF(const JointState& q);
+    Vector3d getHipLH(const JointState& q);
+    Vector3d getHipRH(const JointState& q);
+
     Vector3d getFootPos(const JointState& q, const LegID& leg);
 
     Matrix3d getFootOrientation(const JointState &q, const LegID &leg);

@@ -7,11 +7,11 @@ state_estimator_pronto :
   filter_state_topic : "filter_state"
   publish_filter_state : true
   publish_pose : true
-  publish_tf : true       #publish tf from base_pronto to odom
+  publish_tf : false       #publish tf from base_pronto to odom
   tf_child_frame_id : "base_pronto"
   republish_sensors : false
-  init_sensors : [ins, pose_meas]
-  active_sensors : [ins, pose_meas, legodo]
+  init_sensors : [ins,pose_meas]
+  active_sensors : [ins,legodo,pose_meas]
   utime_history_span : 60000000.0
 
   sigma0 :
@@ -35,7 +35,7 @@ state_estimator_pronto :
   ins :
     topic : "/imu"
     utime_offset : 0 # units 1e-6 seconds
-    downsample_factor : 3 # process 1 out of every this many. for 333Hz use 1. for 1kHz use 3
+    downsample_factor : 1 # process 1 out of every this many. for 333Hz use 1. for 1kHz use 3
     roll_forward_on_receive : true
     publish_head_on_message : true
 
@@ -64,7 +64,7 @@ state_estimator_pronto :
     frame : "imu_link"
 
     # REMEMBER TO CHANGE THIS IF YOU CHANGE THE IMU FREQUENCY or downsample factor
-    timestep_dt : 0.0025 #
+    timestep_dt : 0.006 #
 
     # attempt to detect drastically incorrect initial gyro biases estimates:
     max_initial_gyro_bias : 0.015 # deg/sec, biases above this will be set to zero
@@ -77,7 +77,7 @@ state_estimator_pronto :
     verbose : false # Prints warnings and messages
     debug : false # Sends signals and saves text files with signals
 
-    legodo_mode : 1 # STATIC_SIGMA 0x00, VAR_SIGMA 0x01, IMPACT_SIGMA 0x02, WEIGHTED_AVG 0x04, ALPHA_FILTER : 0x08, KALMAN_FILTER : 0x10
+    legodo_mode : 0x01 # STATIC_SIGMA 0x00, VAR_SIGMA 0x01, IMPACT_SIGMA 0x02, WEIGHTED_AVG 0x04, ALPHA_FILTER : 0x08, KALMAN_FILTER : 0x10
 
     stance_mode : 0 # 0 : THRESHOLD, 1 : HYSTERESIS, 2 : REGRESSION
     stance_threshold : 10 # threshold of GRF[z] to trigger the stance phase
@@ -94,7 +94,7 @@ state_estimator_pronto :
     stance_regression_beta : [3.7252,-0.018077,2.8191,-0.015947,3.2241,-0.018661,3.8836,-0.019669]
     r_vx : 0.02 # sigma velocity x
     r_vy : 0.02 # sigma velocity y
-    r_vz : 0.12 # sigma velocity z
+    r_vz : 0.02 # sigma velocity z
 
     # true only if you have stance ground truth from simulation
     # im_stance_gt : false
@@ -106,7 +106,7 @@ state_estimator_pronto :
     publish_head_on_message : false
 
   fovis :
-    topic : "/fovis/delta_vo"
+    topic : "/pose_pub_node/base_pose"
     # pos, pos_orient
     mode : "pos_orient"
 
@@ -127,13 +127,15 @@ state_estimator_pronto :
 
     # detected on anymal_2019-05-10-10-38-35.bag by comparing onboard IMU and camera IMU
     utime_offset : -343111
-    downsample_factor : 1
+    downsample_factor : 6
     roll_forward_on_receive : true
     publish_head_on_message : false
 
   scan_matcher :
           #topic : "/aicp/transform_msg"
-    topic : "/aicp/pose_corrected"
+    #topic : "/aicp/pose_corrected"
+    topic : "/aft_mapped_pose"
+    #topic : "/laikago/foot_odom"
     utime_offset : 0
     downsample_factor : 1 # process 1 out of every this many
     relative_pose : false
@@ -141,10 +143,10 @@ state_estimator_pronto :
     roll_forward_on_receive : true
     publish_head_on_message : false
 
-    mode : "position_orient" # yaw for drc, position
+    mode : "position" # yaw for drc, position
 
-    r_pxy : 0.004 # sigma position x y [m]
-    r_pz :  0.004 # sigma position z [m]
+    r_pxy : 0.005 # sigma position x y [m]
+    r_pz :  0.005 # sigma position z [m]
 
     r_vxy : 0.06 # sigma velocity x y [m/s]
     r_vz :  0.04 # sigma velocity z [m/s]
@@ -162,7 +164,7 @@ state_estimator_pronto :
     r_xyz : 0.01 # sigma position x y z [m]
     r_chi : 3.0 # sigma orientation [deg]
 
-    downsample_factor : 10
+    downsample_factor : 1
 
     roll_forward_on_receive : true
     publish_head_on_message : false
@@ -171,15 +173,17 @@ state_estimator_pronto :
 
   # correct the pose to this value (to init using Pose BDI)
   pose_meas:
-    no_corrections : 100 # apply this number of corrections before going silent
-    topic : "/pose_pub_node/base_pose"
+    #no_corrections : 100 # apply this number of corrections before going silent
+    #topic : "/aft_mapped_pose"
+    topic : "/laikago/foot_odom"
+    #topic : "/pose_pub_node/base_pose"
     utime_offset : 0 #units 1e-6 seconds
     downsample_factor : 1 # process 1 out of every this many 每一个过程中就有一个
     roll_forward_on_receive : true
     publish_head_on_message : false
 
-    r_xyz : 0.01 #m
-    r_chi : 3.0 #degrees
+    r_xyz : 0.002 #m
+    r_chi : 0.1 #degrees
 
     mode: "position_orient" # "position" "position_orient"
 
